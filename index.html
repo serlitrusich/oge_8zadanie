@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тренажёр ОГЭ · Задание 8 · Морфологические нормы</title>
+<style>
+  :root{
+    --primary:#4f46e5;
+    --primary-dark:#4338ca;
+    --primary-light:#eef2ff;
+    --ok:#16a34a;
+    --ok-light:#dcfce7;
+    --err:#dc2626;
+    --err-light:#fee2e2;
+    --text:#1e293b;
+    --muted:#64748b;
+    --line:#e2e8f0;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    padding:24px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    color:var(--text);
+    background:linear-gradient(160deg,#eef2ff 0%,#f8fafc 45%,#ecfeff 100%);
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{width:100%;max-width:720px;}
+
+  /* ---------- шапка ---------- */
+  .head{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;margin-bottom:14px;padding:0 4px;
+  }
+  .title{font-size:15px;font-weight:700;letter-spacing:.2px;color:var(--primary-dark);}
+  .title span{color:var(--muted);font-weight:500;}
+  .counter{font-size:14px;color:var(--muted);font-weight:600;white-space:nowrap;}
+
+  .track{
+    height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-bottom:18px;
+  }
+  .bar{
+    height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,#6366f1,#8b5cf6);
+    transition:width .35s ease;
+  }
+
+  /* ---------- карточка ---------- */
+  .card{
+    background:#fff;
+    border-radius:22px;
+    padding:30px 28px 26px;
+    box-shadow:0 18px 40px -18px rgba(15,23,42,.25),0 4px 12px rgba(15,23,42,.05);
+    border:1px solid rgba(226,232,240,.9);
+    animation:pop .25s ease;
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  .task-text{
+    font-size:20px;
+    line-height:1.6;
+    margin:0 0 22px;
+    font-weight:500;
+  }
+  .hint{
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    font-weight:700;
+    padding:2px 8px;
+    border-radius:8px;
+    white-space:nowrap;
+  }
+
+  .label{
+    font-size:13px;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--muted);font-weight:700;margin:0 0 10px;
+  }
+
+  .input{
+    width:100%;
+    font-size:20px;
+    font-family:inherit;
+    padding:15px 18px;
+    border:2px solid var(--line);
+    border-radius:14px;
+    outline:none;
+    color:var(--text);
+    transition:border-color .15s, box-shadow .15s, background .15s;
+    background:#fbfcfe;
+  }
+  .input::placeholder{color:#b6c1d0;}
+  .input:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(79,70,229,.13);background:#fff;}
+  .input.ok{border-color:var(--ok);background:var(--ok-light);color:#14532d;font-weight:700;}
+  .input.err{border-color:var(--err);background:var(--err-light);color:#7f1d1d;font-weight:700;}
+  .input:disabled{opacity:1;}
+
+  .shake{animation:shake .4s;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    20%{transform:translateX(-7px);}
+    40%{transform:translateX(7px);}
+    60%{transform:translateX(-4px);}
+    80%{transform:translateX(4px);}
+  }
+
+  .feedback{
+    margin-top:16px;
+    font-size:16px;
+    font-weight:600;
+    min-height:24px;
+    line-height:1.45;
+  }
+  .feedback.ok{color:var(--ok);}
+  .feedback.err{color:var(--err);}
+  .feedback b{font-weight:800;}
+
+  .actions{margin-top:22px;display:flex;justify-content:flex-end;gap:10px;}
+
+  .btn{
+    font-family:inherit;
+    font-size:16px;
+    font-weight:700;
+    color:#fff;
+    background:var(--primary);
+    border:none;
+    border-radius:14px;
+    padding:14px 30px;
+    cursor:pointer;
+    transition:background .15s, transform .08s, box-shadow .15s;
+    box-shadow:0 8px 18px -8px rgba(79,70,229,.8);
+  }
+  .btn:hover{background:var(--primary-dark);}
+  .btn:active{transform:translateY(1px);}
+  .btn.ghost{
+    background:#fff;color:var(--primary);
+    box-shadow:none;border:2px solid var(--primary-light);
+  }
+  .btn.ghost:hover{background:var(--primary-light);}
+
+  /* ---------- итоги ---------- */
+  .result-title{font-size:26px;margin:0 0 6px;font-weight:800;}
+  .result-sub{color:var(--muted);margin:0 0 22px;font-size:16px;}
+
+  .score-big{
+    display:flex;align-items:baseline;gap:10px;
+    padding:18px 22px;border-radius:16px;
+    background:linear-gradient(135deg,#eef2ff,#f5f3ff);
+    border:1px solid #e0e7ff;
+    margin-bottom:22px;
+  }
+  .score-big .num{font-size:40px;font-weight:800;color:var(--primary-dark);line-height:1;}
+  .score-big .of{font-size:18px;color:var(--muted);font-weight:600;}
+  .score-big .pct{margin-left:auto;font-size:18px;font-weight:800;color:var(--primary);}
+
+  .mistakes-title{font-size:14px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:700;margin:0 0 12px;}
+  .mistakes{max-height:290px;overflow:auto;padding-right:6px;margin:0 0 22px;display:flex;flex-direction:column;gap:10px;}
+  .mistake{
+    background:#fff7f7;border:1px solid #fee2e2;border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.5;
+  }
+  .mistake .wrong{color:var(--err);text-decoration:line-through;font-weight:700;}
+  .mistake .right{color:var(--ok);font-weight:800;}
+  .perfect{
+    background:var(--ok-light);border:1px solid #bbf7d0;color:#14532d;
+    border-radius:14px;padding:16px 18px;font-weight:700;margin-bottom:22px;
+  }
+  .mistakes::-webkit-scrollbar{width:8px;}
+  .mistakes::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px;}
+
+  @media (max-width:520px){
+    .card{padding:22px 18px 20px;border-radius:18px;}
+    .task-text{font-size:17px;}
+    .input{font-size:17px;padding:13px 14px;}
+    .btn{padding:13px 22px;font-size:15px;}
+    .title{font-size:13px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="head">
+    <div class="title">ОГЭ · Задание 8 <span>· морфологические нормы</span></div>
+    <div class="counter" id="counter"></div>
+  </div>
+  <div class="track"><div class="bar" id="bar"></div></div>
+  <div id="card"></div>
+</div>
+
+<script>
+/* ==================== ДАННЫЕ ==================== */
+const TASKS = [
+  {s:"(Пятьдесят) километрами ниже по реке находилась сторожка лесника.", a:["пятьюдесятью"]},
+  {s:"По (оба) сторонам дороги цеплялся ельник.", a:["обеим"]},
+  {s:"Ближний язык (пламя) костра светился в темноте.", a:["пламени"]},
+  {s:"Для приготовления десерта понадобится стакан консервированных (абрикосы).", a:["абрикосов"]},
+  {s:"Установка оборудования для фильтрации воды в будущем (беречь) здоровье жителей города.", a:["сбережёт"]},
+  {s:"Самому древнему маку из действующих до наших дней более (двести) лет.", a:["двухсот"]},
+  {s:"Более (пятьдесят) процентов территории заповедника занимают леса.", a:["пятидесяти"]},
+  {s:"Я смотрел, как мокрые от дождя ветви деревьев (хлестать) по стёклам окон.", a:["хлещут"]},
+  {s:"Собирайте крапиву в перчатках: она очень больно (жечься).", a:["жжётся"]},
+  {s:"В магазине мы купили связку (бананы).", a:["бананов"]},
+  {s:"Автомобиль внезапно (заглохнуть) на дороге, потому что в баке закончился бензин.", a:["заглох"]},
+  {s:"Летние (месяц): июнь, июль, август — самые тёплые в году.", a:["месяцы"]},
+  {s:"Мы с Пашей (Власов) прошлым летом вместе отдыхали в лагере.", a:["Власовым"]},
+  {s:"Сердце синего кита весит около (семьсот) килограммов.", a:["семисот"]},
+  {s:"Крупный город располагался в (полтораста) километрах от нашей деревни.", a:["полутораста"]},
+  {s:"Вчера я (промокнуть) под дождём, потому что забыл зонт.", a:["промок"]},
+  {s:"(Двести) студентам за отличную учёбу назначили повышенную стипендию.", a:["двумстам"]},
+  {s:"Голос у девочки был (звонкий), чем у других участниц конкурса.", a:["звонче"]},
+  {s:"Исследование опирается на содержание нескольких (сотня) архивных документов.", a:["сотен"]},
+  {s:"Бывает, что за лёгким движением лицевых (мускулы) скрывается множество различных эмоций.", a:["мускулов"]},
+  {s:"Подготовка к конкурсу заняла у нас чуть больше (полтора) месяцев.", a:["полутора"]},
+  {s:"Добрый пример лучше (сто) слов.", a:["ста"]},
+  {s:"Организатор обратился с речью к (четыреста) участникам форума.", a:["четырёмстам"]},
+  {s:"И маленькая победа над собой делает человека намного (сильный).", a:["сильнее"]},
+  {s:"Разность между (семьдесят) и двадцатью семью равна сорока трём.", a:["семьюдесятью"]},
+  {s:"Из-за тумана город на время (исчезнуть) из вида.", a:["исчез"]},
+  {s:"Бабушка купила две пачки (вафли) по цене одной.", a:["вафель"]},
+  {s:"Перед тем как отправиться в лес, обработайте одежду (аэрозоль) для защиты от насекомых.", a:["аэрозолем"]},
+  {s:"В зале, где должен был выступать известный артист, собралось около (четыреста) человек.", a:["четырёхсот"]},
+  {s:"Московский Кремль имеет двадцать (башни).", a:["башен"]},
+  {s:"Мониторинг состояния морских (побережья) страны осуществляется под надзором экологических организаций.", a:["побережий"]},
+  {s:"Посёлок расположен с (оба) сторон железной дороги.", a:["обеих"]},
+  {s:"В новом магазине был большой выбор модных (джинсы).", a:["джинсов"]},
+  {s:"Во время выполнения упражнения поставьте ноги на ширине (плечи).", a:["плеч"]},
+  {s:"Окно было занавешено (тюль).", a:["тюлем"]},
+  {s:"Для изготовления плетёных (сиденья) используют капроновые полоски, имитирующие ротанговую соломку.", a:["сидений"]},
+  {s:"Мне памятны звуки народных (гулянья) на улицах старой Москвы.", a:["гуляний"]},
+  {s:"Длина стада мигрирующих северных оленей может достигать более (двести) километров.", a:["двухсот"]},
+  {s:"К новому учебному году мне купили две пары (туфли).", a:["туфель"]},
+  {s:"В (триста) метрах от моря расположились туристы.", a:["трёхстах"]},
+  {s:"Солнце (яркий) всех других звёзд нашей Галактики.", a:["ярче"]},
+  {s:"На даче был небольшой погребок для хранения овощей, (соленья) и маринованных грибов.", a:["солений"]},
+  {s:"Врачи предупреждают о вреде неумеренного употребления (чипсы) и газированной воды.", a:["чипсов"]},
+  {s:"(Директор) нескольких школ нашего района столкнулись с проблемой нехватки компьютеров для проведения уроков информатики.", a:["директора"]},
+  {s:"Средний срок жизни дуба составляет около (пятьсот) лет.", a:["пятисот"]},
+  {s:"В пункте проката висело объявление: «Осторожно (ездить) на самокате по улицам города».", a:["ездите"]},
+  {s:"Санкт-Петербург расположен на (оба) берегах Невы.", a:["обоих"]},
+  {s:"Мой брат знает наизусть много (басни) И. А. Крылова.", a:["басен"]},
+  {s:"Цветок (засохнуть), но остался по-прежнему прекрасен.", a:["засох"]},
+  {s:"Завтра мы (попробовать) торт, который испекла мама.", a:["попробуем"]},
+  {s:"В этом месте река (глубокий), чем ниже по течению.", a:["глубже"]},
+  {s:"Лесная малина ароматнее и (мелкий), чем садовая.", a:["мельче"]},
+  {s:"На ужин мама приготовила салат из огурцов и (помидор).", a:["помидоров"]},
+  {s:"У пристани стояли небольшие прогулочные (катер).", a:["катера"]},
+  {s:"Правый берег реки (крутой), чем левый.", a:["круче"]},
+  {s:"Мы купили новые (контейнер) для хранения продуктов.", a:["контейнеры"]},
+  {s:"Собираясь в поход, положите в рюкзак несколько пар запасных (носки).", a:["носков"]},
+  {s:"В магазине представлен широкий выбор модных (платья) и костюмов.", a:["платьев"]},
+  {s:"Бумага (тонкий) картона, поэтому её используют для оригами.", a:["тоньше"]},
+  {s:"В (полтораста) метрах от дома находилась школа.", a:["полутораста"]},
+  {s:"Блокада Ленинграда длилась с 8 сентября 1941 года по 27 января 1944 года — около (девятьсот) мучительных дней.", a:["девятисот"]},
+  {s:"Древние (герб) часто содержали изображения животных и растений.", a:["гербы"]},
+  {s:"(Кондитер) использовали свежие фрукты для украшения тортов.", a:["кондитеры"]},
+  {s:"На улице похолодало, руки замёрзли, а у меня не было с собой (варежки).", a:["варежек"]},
+  {s:"Во время сна у дельфина отдыхает только половина мозга: другая половина (бодрствовать).", a:["бодрствует"]},
+  {s:"Алмаз гораздо (твёрдый) других минералов.", a:["твёрже"]},
+  {s:"Чем дальше на запад от Енисея, тем зима (короткий).", a:["короче"]},
+  {s:"К чаю подали (клубничный) желе.", a:["клубничное"]},
+  {s:"За одну ночь крот может вырыть тоннель длиной до (триста) метров.", a:["трёхсот"]},
+  {s:"В документе сообщалась информация о (семьсот) участниках спортивного марафона.", a:["семистах"]},
+  {s:"Новому предприятию требуются опытные (бухгалтер).", a:["бухгалтеры"]},
+  {s:"После обеда мы съели несколько (черешня).", a:["черешен"]},
+  {s:"На поле стояли (стог) сена.", a:["стога"]},
+  {s:"Кошки, когда расстраиваются, не стесняясь, (плакать) громко и жалобно.", a:["плачут"]},
+  {s:"В магазине мама купила пачку (макароны).", a:["макарон"]},
+  {s:"Вес самой маленькой птички — колибри — колеблется от (полтора) до двух граммов.", a:["полутора"]},
+  {s:"Их дети обычно так долго (прятаться), что их приходится долго искать.", a:["прячутся"]},
+  {s:"Учёные установили, что более (семьдесят) процентов видов животных на нашей планете относится к насекомым.", a:["семидесяти"]},
+  {s:"Из (пятьсот) миллилитров молока можно получить 150 граммов творога.", a:["пятисот"]},
+  {s:"В густой траве прячется кузнечик и неутомимо (стрекотать).", a:["стрекочет"]},
+  {s:"Если вы ещё раз (солгать), вам больше не поверят.", a:["солжёте"]},
+  {s:"Через открытое окно холодный воздух без труда (проникнуть) в комнату, и температура там существенно понизилась.", a:["проник"]},
+  {s:"Давайте (стереть) неудачный карандашный набросок.", a:["сотрём"]},
+  {s:"В порт прибыл корабль с (двести) пассажирами на борту.", a:["двумястами"]},
+  {s:"(Двести) волонтёрами была организована масштабная благотворительная акция.", a:["двумястами"]},
+  {s:"Для подготовки к семинару нам необходимо было прочитать несколько научных (статья).", a:["статей"]}
+];
+
+/* ==================== ЛОГИКА ==================== */
+const card     = document.getElementById('card');
+const counter  = document.getElementById('counter');
+const bar      = document.getElementById('bar');
+
+let idx = 0;
+let checked = false;
+let results = new Array(TASKS.length).fill(null); // null | true | false
+let userAnswers = new Array(TASKS.length).fill('');
+
+/* нормализация ответа: регистр, ё/е, лишние пробелы, знаки в конце */
+function norm(str){
+  return String(str)
+    .toLowerCase()
+    .replace(/ё/g, 'е')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/[.,;:!?]+$/, '');
+}
+
+function isCorrect(task, value){
+  const v = norm(value);
+  return task.a.some(ans => norm(ans) === v);
+}
+
+function highlight(text){
+  return text.replace(/\(([^)]+)\)/g, '<span class="hint">$1</span>');
+}
+
+function updateProgress(){
+  counter.textContent = 'Задание ' + (idx + 1) + ' из ' + TASKS.length;
+  bar.style.width = ((idx) / TASKS.length * 100) + '%';
+}
+
+/* ---------- экран задания ---------- */
+function renderTask(){
+  updateProgress();
+  checked = false;
+  const task = TASKS[idx];
+
+  card.innerHTML =
+    '<p class="task-text">' + highlight(task.s) + '</p>' +
+    '<p class="label">Запишите слово в нужной форме</p>' +
+    '<input id="answer" class="input" type="text" autocomplete="off" ' +
+      'autocapitalize="off" spellcheck="false" placeholder="Ваш ответ…" ' +
+      'value="' + (userAnswers[idx] || '').replace(/"/g, '&quot;') + '">' +
+    '<div class="feedback" id="feedback"></div>' +
+    '<div class="actions"><button class="btn" id="mainBtn">Проверить</button></div>';
+
+  const input = document.getElementById('answer');
+  const btn   = document.getElementById('mainBtn');
+  const fb    = document.getElementById('feedback');
+
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
+
+  input.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') { e.preventDefault(); btn.click(); }
+  });
+
+  btn.addEventListener('click', function(){
+    if (!checked) {
+      doCheck(task, input, fb, btn);
+    } else {
+      next();
+    }
+  });
+}
+
+function doCheck(task, input, fb, btn){
+  const value = input.value;
+
+  if (!value.trim()){
+    input.classList.remove('shake');
+    void input.offsetWidth;
+    input.classList.add('shake');
+    input.focus();
+    return;
+  }
+
+  const ok = isCorrect(task, value);
+  results[idx] = ok;
+  userAnswers[idx] = value;
+  checked = true;
+
+  input.disabled = true;
+  input.classList.add(ok ? 'ok' : 'err');
+
+  if (ok){
+    fb.className = 'feedback ok';
+    fb.textContent = '✅ Верно!';
+  } else {
+    fb.className = 'feedback err';
+    fb.innerHTML = '❌ Неверно. Правильный ответ: <b>' + task.a[0] + '</b>';
+  }
+
+  btn.textContent = (idx === TASKS.length - 1) ? 'Показать результат' : 'Далее →';
+  btn.focus();
+}
+
+function next(){
+  idx++;
+  if (idx >= TASKS.length){
+    renderResult();
+  } else {
+    renderTask();
+  }
+}
+
+/* ---------- экран итогов ---------- */
+function renderResult(){
+  bar.style.width = '100%';
+  counter.textContent = 'Готово';
+
+  const correct = results.filter(r => r === true).length;
+  const total = TASKS.length;
+  const pct = Math.round(correct / total * 100);
+
+  let html = '<h2 class="result-title">Результат</h2>' +
+             '<p class="result-sub">Задание 8 · морфологические нормы</p>' +
+             '<div class="score-big">' +
+               '<span class="num">' + correct + '</span>' +
+               '<span class="of">из ' + total + '</span>' +
+               '<span class="pct">' + pct + '%</span>' +
+             '</div>';
+
+  if (correct === total){
+    html += '<div class="perfect">🏆 Отлично! Все ответы верные — вы готовы к заданию 8.</div>';
+  } else {
+    html += '<p class="mistakes-title">Разбор ошибок</p><div class="mistakes">';
+    TASKS.forEach(function(t, i){
+      if (results[i] === false){
+        html += '<div class="mistake">' +
+                  highlight(t.s) + '<br>' +
+                  'Ваш ответ: <span class="wrong">' +
+                    (userAnswers[i] || '—').replace(/</g,'&lt;') + '</span> · ' +
+                  'Верно: <span class="right">' + t.a[0] + '</span>' +
+                '</div>';
+      }
+    });
+    html += '</div>';
+  }
+
+  html += '<div class="actions">' +
+            '<button class="btn ghost" id="restartBtn">Пройти заново</button>' +
+          '</div>';
+
+  card.innerHTML = html;
+  document.getElementById('restartBtn').addEventListener('click', restart);
+  document.getElementById('restartBtn').focus();
+}
+
+function restart(){
+  idx = 0;
+  checked = false;
+  results = new Array(TASKS.length).fill(null);
+  userAnswers = new Array(TASKS.length).fill('');
+  renderTask();
+}
+
+/* ---------- старт ---------- */
+renderTask();
+</script>
+</body>
+</html>
